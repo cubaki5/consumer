@@ -16,29 +16,38 @@ type Item struct{}
 type Batch []Item
 
 type Consumer struct {
-	x        int
-	mxLocker sync.Mutex
-	isPanic  bool
+	x           int
+	xLocker     sync.Mutex
+	panicLocker sync.Mutex
+	isPanic     bool
 }
 
+func (co *Consumer) setPanic(isPanic bool) {
+	co.panicLocker.Lock()
+	co.isPanic = isPanic
+	co.panicLocker.Unlock()
+}
 func (co *Consumer) ServeBatch(batch Batch) error {
-	co.mxLocker.Lock()
-	defer co.mxLocker.Unlock()
+	co.xLocker.Lock()
+	co.panicLocker.Lock()
+	if co.isPanic {
+		return errors.New("server is fool")
+	}
+	co.panicLocker.Unlock()
+	defer co.xLocker.Unlock()
 	if co.x < len(batch) {
 		co.Panic()
 		return errors.New("server is fool")
 	}
-	var wg sync.WaitGroup
 	for range batch {
 		co.x--
-		wg.Add(1)
 		go func() {
 			time.Sleep(2 * time.Second)
+			co.xLocker.Lock()
 			co.x++
-			wg.Done()
+			defer co.xLocker.Unlock()
 		}()
 	}
-	wg.Wait()
 	return nil
 }
 
@@ -46,11 +55,11 @@ func (co *Consumer) Panic() {
 	if co.isPanic {
 		return
 	}
-	go func(sm *Consumer) {
-		sm.isPanic = true
+	go func() {
+		co.setPanic(true)
 		time.Sleep(5 * time.Minute)
-		sm.isPanic = false
-	}(co)
+		co.setPanic(false)
+	}()
 
 }
 
@@ -80,7 +89,7 @@ func main() {
 			return c.String(http.StatusInternalServerError, "Server is full")
 		}
 
-		return c.String(http.StatusOK, "ok")
+		return c.String(http.StatusOK, "Ok")
 	})
 	e.Logger.Fatal(e.Start(":1323"))
 }
