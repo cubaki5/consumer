@@ -27,13 +27,12 @@ func (co *Consumer) setPanic(isPanic bool) {
 	co.isPanic = isPanic
 	co.panicLocker.Unlock()
 }
+
 func (co *Consumer) ServeBatch(batch Batch) error {
-	co.xLocker.Lock()
-	co.panicLocker.Lock()
 	if co.isPanic {
 		return errors.New("server is fool")
 	}
-	co.panicLocker.Unlock()
+	co.xLocker.Lock()
 	defer co.xLocker.Unlock()
 	if co.x < len(batch) {
 		co.Panic()
@@ -57,10 +56,10 @@ func (co *Consumer) Panic() {
 	}
 	go func() {
 		co.setPanic(true)
-		time.Sleep(5 * time.Minute)
+		time.Sleep(10 * time.Second)
+		log.Println("Server can work")
 		co.setPanic(false)
 	}()
-
 }
 
 func main() {
@@ -70,13 +69,16 @@ func main() {
 		x: 5,
 	}
 	e.POST("/", func(c echo.Context) error {
-
 		b, err := ioutil.ReadAll(c.Request().Body)
 		if err != nil {
 			log.Println("Cannot read body")
 			return c.String(http.StatusInternalServerError, "Cannot read body")
 		}
-		defer c.Request().Body.Close()
+		defer func() {
+			if err = c.Request().Body.Close(); err != nil {
+				log.Printf(err.Error())
+			}
+		}()
 		err = json.Unmarshal(b, &batch)
 		if err != nil {
 			log.Println("Cannot unmarshal json")
