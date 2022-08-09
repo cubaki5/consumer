@@ -54,7 +54,7 @@ func TestConsumer(t *testing.T) {
 			var firstBatch Batch = make([]Item, 6)
 			_, err := makeRequest(firstBatch)
 			assert.NoError(t, err)
-			time.Sleep(10 * time.Second)
+			time.Sleep(11 * time.Second)
 			var secondBatch Batch = make([]Item, 3)
 			actualRequestBody, err := makeRequest(secondBatch)
 			assert.NoError(t, err)

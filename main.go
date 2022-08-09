@@ -16,49 +16,60 @@ type Item struct{}
 type Batch []Item
 
 type Consumer struct {
-	x           int
-	xLocker     sync.Mutex
-	panicLocker sync.Mutex
-	isPanic     bool
+	x       int
+	isPanic bool
+	xLocker sync.Mutex
+}
+
+func (co *Consumer) SetPanic(isPanic bool) {
+	co.xLocker.Lock()
+	defer co.xLocker.Unlock()
+
+	co.setPanic(isPanic)
 }
 
 func (co *Consumer) setPanic(isPanic bool) {
-	co.panicLocker.Lock()
 	co.isPanic = isPanic
-	co.panicLocker.Unlock()
+}
+
+func (co *Consumer) IncrX() {
+	co.xLocker.Lock()
+	defer co.xLocker.Unlock()
+
+	co.incrX()
+}
+
+func (co *Consumer) incrX() {
+	co.x++
 }
 
 func (co *Consumer) ServeBatch(batch Batch) error {
+	co.xLocker.Lock()
+	defer co.xLocker.Unlock()
 	if co.isPanic {
 		return errors.New("server is fool")
 	}
-	co.xLocker.Lock()
-	defer co.xLocker.Unlock()
 	if co.x < len(batch) {
-		co.Panic()
+		co.panic()
 		return errors.New("server is fool")
 	}
 	for range batch {
 		co.x--
 		go func() {
 			time.Sleep(2 * time.Second)
-			co.xLocker.Lock()
-			co.x++
-			defer co.xLocker.Unlock()
+			co.IncrX()
 		}()
 	}
 	return nil
 }
 
-func (co *Consumer) Panic() {
-	if co.isPanic {
-		return
-	}
+func (co *Consumer) panic() {
+	co.setPanic(true)
 	go func() {
-		co.setPanic(true)
 		time.Sleep(10 * time.Second)
 		log.Println("Server can work")
-		co.setPanic(false)
+
+		co.SetPanic(false)
 	}()
 }
 
