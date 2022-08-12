@@ -1,12 +1,14 @@
 package routing
 
 import (
-	"consumer/models"
 	"encoding/json"
-	"github.com/labstack/echo/v4"
 	"io/ioutil"
-	"log"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
+
+	"consumer/models"
 )
 
 type module interface {
@@ -36,7 +38,6 @@ func (h Handler) PostBatch(c echo.Context) error {
 }
 
 func parseRequestBody(c echo.Context) (models.Batch, error) {
-	var batch models.Batch
 
 	b, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
@@ -45,10 +46,11 @@ func parseRequestBody(c echo.Context) (models.Batch, error) {
 
 	defer func() {
 		if err = c.Request().Body.Close(); err != nil {
-			log.Printf(err.Error())
+			log.Error(err.Error())
 		}
 	}()
 
+	var batch models.Batch
 	err = json.Unmarshal(b, &batch)
 	if err != nil {
 		return nil, err

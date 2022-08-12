@@ -1,11 +1,13 @@
 package consumer
 
 import (
-	"consumer/models"
 	"errors"
-	"log"
 	"sync"
 	"time"
+
+	"github.com/labstack/gommon/log"
+
+	"consumer/models"
 )
 
 type Consumer struct {
@@ -16,8 +18,7 @@ type Consumer struct {
 
 func NewConsumer() *Consumer {
 	return &Consumer{
-		x:       ConsumerBuffer,
-		isPanic: false,
+		x: ConsumerBuffer,
 	}
 }
 
@@ -25,7 +26,7 @@ func (co *Consumer) ServeBatch(batch models.Batch) error {
 	co.xLocker.Lock()
 	defer co.xLocker.Unlock()
 	if co.isPanic {
-		log.Println(FoolServer)
+		log.Debug(FoolServer)
 		return errors.New(FoolServer)
 	}
 	if co.x < len(batch) {
@@ -44,9 +45,10 @@ func (co *Consumer) ServeBatch(batch models.Batch) error {
 
 func (co *Consumer) panic() {
 	co.setPanic(true)
+	log.Debug(FoolServer)
 	go func() {
 		time.Sleep(PanicDuration)
-		log.Println("Server can work")
+		log.Debug("server can work")
 		co.SetPanic(false)
 	}()
 }
