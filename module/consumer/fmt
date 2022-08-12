@@ -1,0 +1,16 @@
+mode: set
+consumer/module/consumer/consumer.go:19.30,23.2 1 1
+consumer/module/consumer/consumer.go:25.58,28.16 3 1
+consumer/module/consumer/consumer.go:32.2,32.23 1 1
+consumer/module/consumer/consumer.go:36.2,36.18 1 1
+consumer/module/consumer/consumer.go:43.2,43.12 1 1
+consumer/module/consumer/consumer.go:28.16,31.3 2 1
+consumer/module/consumer/consumer.go:32.23,35.3 2 1
+consumer/module/consumer/consumer.go:36.18,38.13 2 1
+consumer/module/consumer/consumer.go:38.13,41.4 2 1
+consumer/module/consumer/consumer.go:46.29,49.12 3 1
+consumer/module/consumer/consumer.go:49.12,53.3 3 1
+consumer/module/consumer/consumer.go:56.44,61.2 3 1
+consumer/module/consumer/consumer.go:63.44,65.2 1 1
+consumer/module/consumer/consumer.go:67.29,72.2 3 0
+consumer/module/consumer/consumer.go:74.29,76.2 1 0
