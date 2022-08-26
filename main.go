@@ -24,6 +24,6 @@ func main() {
 	co := consumer.NewConsumer()
 	strings.Split("nya", ",")
 	e.POST("/", routing.NewHandler(co).PostBatch)
-
+	e.GET("/buffer", routing.NewHandler(co).GetBuffer)
 	e.Logger.Fatal(e.Start(":1323"))
 }

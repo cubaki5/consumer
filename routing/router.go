@@ -23,6 +23,10 @@ func NewHandler(m module) *Handler {
 	return &Handler{m: m}
 }
 
+func (h Handler) GetBuffer(c echo.Context) error {
+
+}
+
 func (h Handler) PostBatch(c echo.Context) error {
 	batch, err := parseRequestBody(c)
 	if err != nil {
