@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -13,6 +14,7 @@ import (
 
 type module interface {
 	ServeBatch(batch models.Batch) error
+	GetBufferFreeSpace() (int, error)
 }
 
 type Handler struct {
@@ -24,7 +26,11 @@ func NewHandler(m module) *Handler {
 }
 
 func (h Handler) GetBuffer(c echo.Context) error {
-
+	bufferFreeSpace, err := h.m.GetBufferFreeSpace()
+	if err != nil {
+		return c.String(http.StatusServiceUnavailable, strconv.Itoa(bufferFreeSpace))
+	}
+	return c.String(http.StatusOK, strconv.Itoa(bufferFreeSpace))
 }
 
 func (h Handler) PostBatch(c echo.Context) error {
@@ -35,7 +41,7 @@ func (h Handler) PostBatch(c echo.Context) error {
 
 	err = h.m.ServeBatch(batch)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.String(http.StatusServiceUnavailable, err.Error())
 	}
 
 	return c.String(http.StatusOK, "Ok")

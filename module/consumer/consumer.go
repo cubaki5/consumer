@@ -13,13 +13,22 @@ import (
 type Consumer struct {
 	x       int
 	isPanic bool
-	xLocker sync.Mutex
+	xLocker sync.RWMutex
 }
 
 func NewConsumer() *Consumer {
 	return &Consumer{
 		x: ConsumerBuffer,
 	}
+}
+
+func (co *Consumer) GetBufferFreeSpace() (bufferFreeSpace int, err error) {
+	co.xLocker.RLock()
+	defer co.xLocker.RUnlock()
+	if co.isPanic {
+		return 0, errors.New(FoolServer)
+	}
+	return co.x, nil
 }
 
 func (co *Consumer) ServeBatch(batch models.Batch) error {
